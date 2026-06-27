@@ -56,7 +56,7 @@
             margin-bottom: 12px;
             font-size: 38px;
             font-weight: 800;
-            letter-spacing: -0.75px; /* Premium compressed text feel */
+            letter-spacing: -0.75px;
             background: linear-gradient(45deg, #7B2CBF, #FF007F);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -68,7 +68,7 @@
             font-size: 16px;
             font-weight: 500;
             letter-spacing: 0.2px;
-            line-height: 1.6; /* Adds aesthetic space between phrases */
+            line-height: 1.6;
             opacity: 0.85;
         }
 
@@ -239,8 +239,6 @@
     <h1>Alphabet Hand Sign Recognition</h1>
     <p class="subtitle">Capture. Upload. Translate. Instantly.</p>
 
-    <div id="error-message"></div>
-
     <div class="mode-selector">
         <button class="tab-btn active" data-mode="camera" onclick="switchMode('camera')">📸 Capture Photo</button>
         <button class="tab-btn" data-mode="upload" onclick="switchMode('upload')">📁 Upload File</button>
@@ -248,6 +246,7 @@
 
     <div id="camera-panel" class="panel active">
         <button class="action-btn" id="start-cam-btn" onclick="startCamera()">Turn On Camera</button>
+        <button class="action-btn" id="flip-cam-btn" onclick="flipCamera()" style="display: none; background: #7B2CBF; box-shadow: 0 6px 16px rgba(123, 44, 191, 0.2);">🔄 Flip Camera</button>
         <button class="action-btn capture-btn" id="capture-snapshot-btn" onclick="captureSnapshot()" style="display: none;">📸 Snap Photo</button>
         <button class="action-btn" id="retake-btn" onclick="startCamera()" style="display: none; background: #5A6275;">🔄 Retake Photo</button>
         
@@ -271,6 +270,8 @@
         <h2>Detected Hand Sign</h2>
         <div id="prediction-result">---</div>
     </div>
+
+    <div id="error-message"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
@@ -282,6 +283,7 @@
 
     let model, webcam, maxPredictions;
     let isLiveStreaming = false;
+    let useFacingMode = "user"; // "user" = front/selfie camera, "environment" = back/main camera
 
     async function loadModel() {
         if (model) return true;
@@ -328,8 +330,8 @@
             document.getElementById('captured-snapshot').style.display = 'none';
             document.getElementById('result-card').style.display = 'none';
             
-            webcam = new tmImage.Webcam(320, 320, true); 
-            await webcam.setup(); 
+            webcam = new tmImage.Webcam(320, 320, useFacingMode === "user"); 
+            await webcam.setup({ facingMode: useFacingMode }); 
             await webcam.play();
             
             isLiveStreaming = true;
@@ -339,11 +341,19 @@
             container.appendChild(webcam.canvas);
             
             document.getElementById('capture-snapshot-btn').style.display = 'inline-block';
+            document.getElementById('flip-cam-btn').style.display = 'inline-block';
             window.requestAnimationFrame(webcamPreviewLoop);
         } catch (err) {
             showError("Camera system blocked or unavailable.");
             resetCameraUI();
         }
+    }
+
+    async function flipCamera() {
+        if (!webcam) return;
+        useFacingMode = (useFacingMode === "user") ? "environment" : "user";
+        stopWebcam();
+        await startCamera();
     }
 
     function webcamPreviewLoop() {
@@ -368,6 +378,7 @@
         document.getElementById('webcam-container').style.display = 'none';
         snapCanvas.style.display = 'block';
         document.getElementById('capture-snapshot-btn').style.display = 'none';
+        document.getElementById('flip-cam-btn').style.display = 'none';
         document.getElementById('retake-btn').style.display = 'inline-block';
 
         await predict(snapCanvas);
@@ -380,6 +391,7 @@
         document.getElementById('result-card').style.display = 'none';
         document.getElementById('retake-btn').style.display = 'none';
         document.getElementById('capture-snapshot-btn').style.display = 'none';
+        document.getElementById('flip-cam-btn').style.display = 'none';
         document.getElementById('start-cam-btn').style.display = 'inline-block';
         document.getElementById('webcam-container').style.display = 'block';
         document.getElementById('webcam-container').innerHTML = '';
@@ -447,9 +459,10 @@
         const confidenceThreshold = 0.70; 
         const classNameLower = highestPrediction.className.toLowerCase();
         
+        // Quietly hides the card if it's low confidence, background space, or empty
         if (highestPrediction.probability < confidenceThreshold || classNameLower === "nothing" || classNameLower === "background") {
-            showError("The model isn't confident enough. Please try again with better lighting.");
             document.getElementById('result-card').style.display = 'none';
+            showError(""); 
         } else {
             showError("");
             document.getElementById('result-card').style.display = 'block';
