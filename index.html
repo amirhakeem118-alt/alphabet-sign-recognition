@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Premium Hand Sign AI ⚡</title>
+    <style>
+        :root {
+            --gradient-bg: linear-gradient(-45deg, #4158D0, #C850C0, #FFCC70, #240b36);
+            --panel-bg: rgba(255, 255, 255, 0.92);
+            --text-main: #1D1E2C;
+            --btn-camera: linear-gradient(135deg, #FF007F, #7B2CBF);
+            --btn-upload: linear-gradient(135deg, #00E5FF, #0077FF);
+            --btn-action: linear-gradient(135deg, #00E676, #00A94A);
+            --btn-capture: linear-gradient(135deg, #FF9100, #E03E00);
+            --btn-danger: linear-gradient(135deg, #FF4D4D, #C30000);
+            --card-shadow: 0 24px 48px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            text-align: center;
+            background: var(--gradient-bg);
+            background-size: 400% 400%;
+            animation: gradientWave 18s ease infinite;
+            color: var(--text-main);
+            padding: 40px 20px;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        @keyframes gradientWave {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: var(--panel-bg);
+            padding: 45px 35px;
+            border-radius: 32px;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-size: 38px;
+            font-weight: 800;
+            letter-spacing: -0.75px; /* Premium compressed text feel */
+            background: linear-gradient(45deg, #7B2CBF, #FF007F);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: #5A6275;
+            margin-bottom: 35px;
+            font-size: 16px;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+            line-height: 1.6; /* Adds aesthetic space between phrases */
+            opacity: 0.85;
+        }
+
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 35px;
+            background: rgba(0, 0, 0, 0.04);
+            padding: 6px;
+            border-radius: 50px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 14px 22px;
+            font-size: 15px;
+            font-weight: 700;
+            border: none;
+            background: transparent;
+            color: #5A6275;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .tab-btn[data-mode="camera"].active {
+            background: var(--btn-camera);
+            color: white;
+            box-shadow: 0 8px 20px rgba(123, 44, 191, 0.3);
+        }
+
+        .tab-btn[data-mode="upload"].active {
+            background: var(--btn-upload);
+            color: white;
+            box-shadow: 0 8px 20px rgba(0, 119, 255, 0.3);
+        }
+
+        .panel {
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .action-btn {
+            padding: 14px 32px;
+            font-size: 15px;
+            font-weight: 700;
+            background: var(--btn-action);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 6px 16px rgba(0, 169, 74, 0.2);
+            margin: 6px;
+        }
+
+        .capture-btn {
+            background: var(--btn-capture);
+            box-shadow: 0 6px 16px rgba(224, 62, 0, 0.2);
+        }
+
+        .danger-btn {
+            background: var(--btn-danger);
+            box-shadow: 0 6px 16px rgba(255, 77, 77, 0.2);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.05);
+        }
+        
+        .action-btn:active {
+            transform: translateY(1px);
+        }
+
+        .view-box {
+            width: 320px;
+            height: 320px;
+            margin: 25px auto;
+            border: 2px dashed rgba(0, 0, 0, 0.12);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.02);
+            overflow: hidden;
+            position: relative;
+        }
+
+        #webcam-container canvas, #uploaded-image, #captured-snapshot {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 22px;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #4158D0, #C850C0);
+            color: white;
+            border-radius: 16px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 15px;
+            box-shadow: 0 6px 16px rgba(200, 80, 192, 0.25);
+            transition: all 0.25s ease;
+            margin: 6px;
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.05);
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #240b36, #c31432);
+            color: white;
+            padding: 22px;
+            border-radius: 20px;
+            margin-top: 30px;
+            display: none;
+            box-shadow: 0 12px 28px rgba(195, 20, 50, 0.25);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.92); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .result-card h2 {
+            margin: 0 0 4px 0;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        #prediction-result {
+            font-size: 38px;
+            font-weight: 900;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        #error-message {
+            color: #FF3B30;
+            font-weight: 700;
+            font-size: 14px;
+            margin: 15px 0;
+            min-height: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Alphabet Hand Sign Recognition</h1>
+    <p class="subtitle">Capture. Upload. Translate. Instantly.</p>
+
+    <div id="error-message"></div>
+
+    <div class="mode-selector">
+        <button class="tab-btn active" data-mode="camera" onclick="switchMode('camera')">📸 Capture Photo</button>
+        <button class="tab-btn" data-mode="upload" onclick="switchMode('upload')">📁 Upload File</button>
+    </div>
+
+    <div id="camera-panel" class="panel active">
+        <button class="action-btn" id="start-cam-btn" onclick="startCamera()">Turn On Camera</button>
+        <button class="action-btn capture-btn" id="capture-snapshot-btn" onclick="captureSnapshot()" style="display: none;">📸 Snap Photo</button>
+        <button class="action-btn" id="retake-btn" onclick="startCamera()" style="display: none; background: #5A6275;">🔄 Retake Photo</button>
+        
+        <div class="view-box">
+            <div id="webcam-container"></div>
+            <canvas id="captured-snapshot" style="display: none;"></canvas>
+        </div>
+    </div>
+
+    <div id="upload-panel" class="panel">
+        <label for="file-input" class="file-input-label" id="upload-label">Select Image File</label>
+        <button class="action-btn danger-btn" id="remove-file-btn" onclick="removeUploadedFile()" style="display: none;">🗑️ Remove Photo</button>
+        <input type="file" id="file-input" accept="image/*" onchange="handleFileUpload(event)">
+        
+        <div class="view-box">
+            <img id="uploaded-image" alt="Preview Frame" style="display: none;">
+        </div>
+    </div>
+
+    <div class="result-card" id="result-card">
+        <h2>Detected Hand Sign</h2>
+        <div id="prediction-result">---</div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+
+<script>
+    // ⚠️ REPLACE THIS LINK WITH YOUR TEACHABLE MACHINE URL
+    const URL = "https://teachablemachine.withgoogle.com/models/_XrAbP1rV/";
+
+    let model, webcam, maxPredictions;
+    let isLiveStreaming = false;
+
+    async function loadModel() {
+        if (model) return true;
+        try {
+            showError(""); 
+            const modelURL = URL + "model.json";
+            const metadataURL = URL + "metadata.json";
+            model = await tmImage.load(modelURL, metadataURL);
+            maxPredictions = model.getTotalClasses();
+            return true;
+        } catch (err) {
+            showError("Failed to initialize your Teachable Machine model. Verify your URL variable.");
+            return false;
+        }
+    }
+
+    function switchMode(mode) {
+        stopWebcam();
+        
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('result-card').style.display = 'none';
+        showError("");
+
+        if(mode === 'camera') {
+            document.getElementById('camera-panel').classList.add('active');
+            document.querySelector('.tab-btn[data-mode="camera"]').classList.add('active');
+            resetCameraUI();
+        } else {
+            document.getElementById('upload-panel').classList.add('active');
+            document.querySelector('.tab-btn[data-mode="upload"]').classList.add('active');
+            removeUploadedFile();
+        }
+    }
+
+    async function startCamera() {
+        const modelLoaded = await loadModel();
+        if (!modelLoaded) return;
+
+        try {
+            showError("");
+            document.getElementById('start-cam-btn').style.display = 'none';
+            document.getElementById('retake-btn').style.display = 'none';
+            document.getElementById('captured-snapshot').style.display = 'none';
+            document.getElementById('result-card').style.display = 'none';
+            
+            webcam = new tmImage.Webcam(320, 320, true); 
+            await webcam.setup(); 
+            await webcam.play();
+            
+            isLiveStreaming = true;
+            const container = document.getElementById("webcam-container");
+            container.innerHTML = "";
+            container.style.display = "block";
+            container.appendChild(webcam.canvas);
+            
+            document.getElementById('capture-snapshot-btn').style.display = 'inline-block';
+            window.requestAnimationFrame(webcamPreviewLoop);
+        } catch (err) {
+            showError("Camera system blocked or unavailable.");
+            resetCameraUI();
+        }
+    }
+
+    function webcamPreviewLoop() {
+        if (!isLiveStreaming || !webcam) return;
+        webcam.update(); 
+        window.requestAnimationFrame(webcamPreviewLoop);
+    }
+
+    async function captureSnapshot() {
+        if (!webcam) return;
+
+        isLiveStreaming = false; 
+        
+        const liveCanvas = webcam.canvas;
+        const snapCanvas = document.getElementById('captured-snapshot');
+        const ctx = snapCanvas.getContext('2d');
+        
+        snapCanvas.width = liveCanvas.width;
+        snapCanvas.height = liveCanvas.height;
+        ctx.drawImage(liveCanvas, 0, 0);
+
+        document.getElementById('webcam-container').style.display = 'none';
+        snapCanvas.style.display = 'block';
+        document.getElementById('capture-snapshot-btn').style.display = 'none';
+        document.getElementById('retake-btn').style.display = 'inline-block';
+
+        await predict(snapCanvas);
+        stopWebcam();
+    }
+
+    function resetCameraUI() {
+        stopWebcam();
+        document.getElementById('captured-snapshot').style.display = 'none';
+        document.getElementById('result-card').style.display = 'none';
+        document.getElementById('retake-btn').style.display = 'none';
+        document.getElementById('capture-snapshot-btn').style.display = 'none';
+        document.getElementById('start-cam-btn').style.display = 'inline-block';
+        document.getElementById('webcam-container').style.display = 'block';
+        document.getElementById('webcam-container').innerHTML = '';
+    }
+
+    function stopWebcam() {
+        isLiveStreaming = false;
+        if (webcam) {
+            webcam.stop();
+            webcam = null;
+        }
+    }
+
+    async function handleFileUpload(event) {
+        showError("");
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            showError("Format mismatch. Choose a valid image file.");
+            return;
+        }
+
+        const modelLoaded = await loadModel();
+        if (!modelLoaded) return;
+
+        const reader = new FileReader();
+        reader.onload = function(fEvent) {
+            const imgElement = document.getElementById('uploaded-image');
+            imgElement.src = fEvent.target.result;
+            imgElement.style.display = 'block';
+            
+            document.getElementById('upload-label').style.display = 'none';
+            document.getElementById('remove-file-btn').style.display = 'inline-block';
+
+            imgElement.onload = async function() {
+                await predict(imgElement);
+            }
+        }
+        reader.readAsDataURL(file);
+    }
+
+    function removeUploadedFile() {
+        document.getElementById('uploaded-image').style.display = 'none';
+        document.getElementById('uploaded-image').src = '';
+        document.getElementById('file-input').value = "";
+        document.getElementById('remove-file-btn').style.display = 'none';
+        document.getElementById('upload-label').style.display = 'inline-block';
+        document.getElementById('result-card').style.display = 'none';
+        showError("");
+    }
+
+    async function predict(inputElement) {
+        if (!model) return;
+        
+        const prediction = await model.predict(inputElement);
+        
+        let highestPrediction = { className: "Unknown", probability: 0 };
+        for (let i = 0; i < maxPredictions; i++) {
+            if (prediction[i].probability > highestPrediction.probability) {
+                highestPrediction = prediction[i];
+            }
+        }
+
+        const confidenceThreshold = 0.70; 
+        const classNameLower = highestPrediction.className.toLowerCase();
+        
+        if (highestPrediction.probability < confidenceThreshold || classNameLower === "nothing" || classNameLower === "background") {
+            showError("The model isn't confident enough. Please try again with better lighting.");
+            document.getElementById('result-card').style.display = 'none';
+        } else {
+            showError("");
+            document.getElementById('result-card').style.display = 'block';
+            const percentage = (highestPrediction.probability * 100).toFixed(1);
+            document.getElementById('prediction-result').innerHTML = 
+                `${highestPrediction.className} <span style="font-size: 20px; font-weight:500; color: rgba(255,255,255,0.65);">(${percentage}%)</span>`;
+        }
+    }
+
+    function showError(msg) {
+        document.getElementById('error-message').innerText = msg;
+    }
+</script>
+</body>
+</html>
